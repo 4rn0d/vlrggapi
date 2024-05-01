@@ -14,6 +14,12 @@ async def VLR_news(request: Request):
     return vlr.vlr_news()
 
 
+@router.get("/article/{article_url}")
+@limiter.limit("250/minute")
+async def VLR_news(request: Request, article_url: str):
+    return vlr.vlr_articles(article_url)
+
+
 @router.get("/stats/{region}/{timespan}")
 @limiter.limit("250/minute")
 async def VLR_stats(region, timespan, request: Request):

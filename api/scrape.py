@@ -66,6 +66,42 @@ class Vlr:
         return data
 
     @staticmethod
+    def vlr_articles(article_url: str):
+
+        url = 'https://www.vlr.gg/' + article_url
+        resp = requests.get(url, headers=headers)
+        html = HTMLParser(resp.text)
+        status = resp.status_code
+
+        result = []
+
+        for item in html.css("div.mod-article"):
+            print(item)
+
+            for span in item.css('span.wf-hover-card'):
+                span.decompose()
+
+            text = item.css_first("div.article-body").text().strip()
+
+            clean_text = text.replace("\t", " ").replace("\n", " ")
+
+
+            # This is appending the data to the result list.
+            result.append(
+                {
+                    "text": clean_text
+                }
+            )
+        # This is creating a dictionary with the key "data" and the value of the dictionary is another dictionary
+        # with the keys "status" and "segments".
+        data = {"data": {"status": status, "segments": result}}
+
+        # This is checking if the status code is not 200, if it is not 200 then it will raise an exception.
+        if status != 200:
+            raise Exception("API response: {}".format(status))
+        return data
+
+    @staticmethod
     def vlr_rankings(region):
         url = "https://www.vlr.gg/rankings/" + res.region[str(region)]
         resp = requests.get(url, headers=headers)
@@ -74,6 +110,8 @@ class Vlr:
 
         result = []
         for item in html.css("div.rank-item"):
+
+            print(item)
             # get team ranking
             rank = item.css_first("div.rank-item-rank-num").text().strip()
 
