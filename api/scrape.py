@@ -79,7 +79,7 @@ class Vlr:
             print(item)
 
             for span in item.css('span.wf-hover-card'):
-                span.decompose()
+                span.decompose(True)
 
             text = item.css_first("div.article-body").text().strip()
 
@@ -89,7 +89,7 @@ class Vlr:
             # This is appending the data to the result list.
             result.append(
                 {
-                    "text": clean_text
+                    "text": text
                 }
             )
         # This is creating a dictionary with the key "data" and the value of the dictionary is another dictionary
