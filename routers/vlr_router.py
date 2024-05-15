@@ -1,26 +1,28 @@
 from fastapi import APIRouter, Request
-from api.scrape import Vlr
+from api.scrape import Vlr, Sheep
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 vlr = Vlr()
+sheep = Sheep()
 
 
-@router.get("/news")
+# region VLR API
+@router.get("/vlrNews", tags=["vlr"])
 @limiter.limit("250/minute")
 async def VLR_news(request: Request):
     return vlr.vlr_news()
 
 
-@router.get("/article/{article_url}")
+@router.get("/vlrNews/content/", tags=["vlr"])
 @limiter.limit("250/minute")
 async def VLR_news(request: Request, article_url: str):
     return vlr.vlr_articles(article_url)
 
 
-@router.get("/stats/{region}/{timespan}")
+@router.get("/stats/{region}/{timespan}", tags=["vlr"])
 @limiter.limit("250/minute")
 async def VLR_stats(region, timespan, request: Request):
     """
@@ -41,7 +43,7 @@ async def VLR_stats(region, timespan, request: Request):
     return vlr.vlr_stats(region, timespan)
 
 
-@router.get("/rankings/{region}")
+@router.get("/rankings/{region}", tags=["vlr"])
 @limiter.limit("250/minute")
 async def VLR_ranks(region, request: Request):
     """
@@ -62,7 +64,7 @@ async def VLR_ranks(region, request: Request):
     return vlr.vlr_rankings(region)
 
 
-@router.get("/match")
+@router.get("/match", tags=["vlr"])
 @limiter.limit("250/minute")
 async def VLR_match(request: Request, q: str):
     """
@@ -81,6 +83,25 @@ async def VLR_match(request: Request, q: str):
         return {"error": "Invalid query parameter"}
 
 
-@router.get("/health")
+# endregion
+
+# region SHEEP API
+@router.get("/news/thumbnail", tags=["sheep"])
+@limiter.limit("250/minute")
+async def get_thumbnail(request: Request, tag: str = ""):
+    return sheep.sheep_news(tag)
+
+
+@router.get("/news/content/", tags=["sheep"])
+@limiter.limit("250/minute")
+async def get_content(request: Request, article_url: str):
+    return sheep.sheep_get_content(article_url)
+
+
+# endregion
+
+# region Miscellaneous
+@router.get("/health", tags=["miscellaneous"])
 def health():
     return "Healthy: OK"
+# endregion

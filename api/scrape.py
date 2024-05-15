@@ -85,7 +85,6 @@ class Vlr:
 
             clean_text = text.replace("\t", " ").replace("\n", " ")
 
-
             # This is appending the data to the result list.
             result.append(
                 {
@@ -110,7 +109,6 @@ class Vlr:
 
         result = []
         for item in html.css("div.rank-item"):
-
             print(item)
             # get team ranking
             rank = item.css_first("div.rank-item-rank-num").text().strip()
@@ -473,6 +471,105 @@ class Vlr:
         if status != 200:
             raise Exception("API response: {}".format(status))
         return data
+
+
+class Sheep:
+    def get_parse(self, url):
+
+        resp = requests.get(url, headers=headers)
+        html, status_code = resp.text, resp.status_code
+        return HTMLParser(html), status_code
+
+    def sheep_news(self, tag: str):
+
+        url = "https://www.sheepesports.com/browse/" + tag
+        html, status = self.get_parse(url)
+        result = []
+
+        for item in html.css("article"):
+            link = item.parent.attributes["href"]
+            image = item.css_first("img").attributes["src"]
+            title = item.css_first("h2").text()
+
+            # This is appending the data to the result list.
+            result.append(
+                {
+                    "title": title,
+                    "link": link,
+                    "image": image,
+                }
+            )
+        # This is creating a dictionary with the key "data" and the value of the dictionary is another dictionary
+        # with the keys "status" and "segments".
+        if status != 200:
+            raise Exception("API response: {}".format(status))
+        return result
+
+    def sheep_get_content(self, news_url: str):
+        url = 'https://www.sheepesports.com/articles/' + news_url
+        html, status = self.get_parse(url)
+        result = []
+
+        author = ""
+        for item in html.css("span.items-center"):
+            author = item.text()
+
+        date = html.css_first("h2").text().split(' ')[0]
+
+        text = ""
+        for item in html.css("article"):
+            for paragraph in item.css("div.undefined"):
+                text += paragraph.text().strip() + "\n"
+        videos = []
+        for item in html.css("iframe"):
+            video_link = item.attributes["src"]
+            videos.append(
+                {
+                    "video": video_link
+                }
+            )
+
+        images = []
+        for item in html.css("img"):
+            image_link = item.attributes["src"]
+            images.append(
+                {
+                    "image": "https://www.sheepesports.com" + image_link
+                }
+            )
+
+        tags = []
+        node = html.css("a")
+        for a in node:
+            attributes = a.attributes
+            if "aria-label" in attributes and "Tag" in attributes["aria-label"]:
+                # This is appending the data to the result list.
+                name = attributes["aria-label"]
+                link = attributes["href"]
+                tags.append(
+                    {
+                        "name": name,
+                        "link": link
+                    }
+                )
+        result.append(
+            {
+                "author": author,
+                "date": date,
+                "text": text,
+                "tags": tags,
+                "Media": {
+                    "videos": videos,
+                    "images": images,
+                }
+            }
+        )
+
+        if status != 200:
+            raise Exception("API response: {}".format(status))
+        return result
+
+    # def sheep_articles_text(self, tag: str):
 
 
 if __name__ == "__main__":
